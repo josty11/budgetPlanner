@@ -9,7 +9,8 @@ import SwiftUI
 
 struct DashboardView: View {
     @ObservedObject var viewModel = DashboardViewModel()
-    
+    @State private var showingAddTransaction = false
+
     var body: some View {
         NavigationView {
             VStack {
@@ -20,6 +21,7 @@ struct DashboardView: View {
                         Text("$\(viewModel.totalBalance, specifier: "%.2f")")
                             .font(.title)
                     }
+                    Spacer()
                     HStack {
                         Text("Income")
                         Text("$\(viewModel.totalIncome, specifier: "%.2f")")
@@ -29,10 +31,20 @@ struct DashboardView: View {
                         Text("$\(viewModel.totalExpenses, specifier: "%.2f")")
                     }
                     Spacer()
+                    
                 }
                 .padding()
             }
             .navigationTitle("Dashboard")
+            .navigationBarItems(trailing: Button(action: {
+                showingAddTransaction = true
+            }) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title)
+            })
+            .sheet(isPresented: $showingAddTransaction) {
+                AddTransactionView()
+            }
             .onAppear {
                 viewModel.fetchDashboardData()
             }

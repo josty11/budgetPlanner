@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import RealmSwift
 
-struct Transaction: Identifiable {
-    let id: UUID
-    let title: String
-    let amount: Double
-    let date: Date
-    let category: String
-    let isExpense: Bool
+class Transaction: Object, Identifiable {
+    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted var title: String = ""
+    @Persisted var amount: Double = 0.0
+    @Persisted var currency: String = "USD"
+    @Persisted var date: Date = Date()
+    @Persisted var category: String = ""
 }
