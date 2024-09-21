@@ -36,7 +36,7 @@ struct TransactionsListView: View {
                             HStack {
                                 Text("\(transaction.amount, specifier: "%.2f") \(transaction.currency)")
                                 Spacer()
-                                Text(transaction.category)
+                                Text(transaction.category?.name ?? "")
                             }
                             .font(.subheadline)
                             

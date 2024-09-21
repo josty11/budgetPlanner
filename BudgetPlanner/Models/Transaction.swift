@@ -14,5 +14,5 @@ class Transaction: Object, Identifiable {
     @Persisted var amount: Double = 0.0
     @Persisted var currency: String = "USD"
     @Persisted var date: Date = Date()
-    @Persisted var category: String = ""
+    @Persisted var category: Category?
 }

@@ -14,20 +14,13 @@ struct AddTransactionView: View {
     @State private var amount: String = ""
     @State private var selectedCurrency: String = "USD"
     @State private var date: Date = Date()
-    @State private var selectedCategory: String?
+    @State private var selectedCategory: Category?
     let currencies = ["USD", "EUR", "GBP", "JPY", "AUD"]
-    let categories = [
-        ("Groceries", "cart.fill"),
-        ("Transport", "car.fill"),
-        ("Bills", "bolt.fill"),
-        ("Shopping", "bag.fill"),
-        ("Entertainment", "gamecontroller.fill"),
-        ("Health", "heart.fill"),
-        ("Travel", "airplane"),
-        ("Food", "fork.knife"),
-        ("Savings", "dollarsign.circle.fill"),
-        ("Other", "questionmark.circle.fill")
-    ]
+    
+    @ObservedResults(Category.self) var categories
+    
+    @State private var isShowingAddCategory = false
+    
     var body: some View {
         NavigationView {
             Form {
@@ -53,10 +46,40 @@ struct AddTransactionView: View {
                 }
                 
                 Section(header: Text("Choose Category")) {
-                    CategoryGridView(categories: categories, selectedCategory: $selectedCategory)
+                    // Predefined categories and custom categories from Realm
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(categories) { category in
+                                Button(action: {
+                                    selectedCategory = category
+                                }) {
+                                    VStack {
+                                        Image(systemName: category.iconName)
+                                        Text(category.name)
+                                    }
+                                    .padding()
+                                    .background(category.id == selectedCategory?.id ? Color.blue.opacity(0.3) : Color.clear)
+                                    .cornerRadius(10)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Button to add a new custom category
+                    Button(action: {
+                        isShowingAddCategory.toggle()
+                    }) {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Add Custom Category")
+                        }
+                    }
                 }
             }
             .navigationBarTitle("Add Transaction", displayMode: .inline)
+            .sheet(isPresented: $isShowingAddCategory) {
+                AddCustomCategoryView()
+            }
             .navigationBarItems(leading: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
             }, trailing: Button("Save") {
@@ -74,12 +97,18 @@ struct AddTransactionView: View {
         transaction.amount = amount
         transaction.currency = selectedCurrency
         transaction.date = date
-        transaction.category = selectedCategory
         
         let realm = try! Realm()
-        
-        try! realm.write {
-            realm.add(transaction)
+        if let managedCategory = realm.object(ofType: Category.self, forPrimaryKey: selectedCategory.id) {
+            transaction.category = managedCategory
+        }
+
+        do {
+            try realm.write {
+                realm.add(transaction)
+            }
+        } catch {
+            print("Error saving transaction: \(error.localizedDescription)")
         }
     }
 }
